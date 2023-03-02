@@ -1,4 +1,6 @@
-const count = 100000
+const count = 50000
+
+import { evaluate_cmap } from "./colormaps"
 
 /* THREE setup */
 
@@ -34,7 +36,7 @@ const cos = Math.cos
 
 var g = 9.81
 var speed = 0.05
-// var friction = 1
+var friction = 0.0002 // ideal may be 0.0002
 var m1 = 10
 var m2 = 10
 var l1 = 15
@@ -52,8 +54,6 @@ class Pendulum {
   l2: number
   theta1: number
   theta2: number
-  d2Theta1: number
-  d2Theta2: number
   dTheta1: number
   dTheta2: number
 
@@ -72,8 +72,7 @@ class Pendulum {
 
     this.theta1 = (theta1 * PI) / 180
     this.theta2 = (theta2 * PI) / 180
-    this.d2Theta1 = 0
-    this.d2Theta2 = 0
+
     this.dTheta1 = 0
     this.dTheta2 = 0
   }
@@ -83,30 +82,35 @@ class Pendulum {
 function update(p: Pendulum) {
   let mu = 1 + p.m1 / p.m2
 
-  let { theta1, theta2, d2Theta1, d2Theta2, dTheta1, dTheta2, l1, l2 } = p
+  let { theta1, theta2, dTheta1, dTheta2, l1, l2 } = p
 
   let thetaDiff = theta1 - theta2
 
   let cosThetaDiff = cos(thetaDiff)
 
-  p.d2Theta1 =
+  let d2Theta1 =
     (g * (sin(theta2) * cosThetaDiff - mu * sin(theta1)) -
       (l2 * dTheta2 * dTheta2 + l1 * dTheta1 * dTheta1 * cosThetaDiff) *
         sin(thetaDiff)) /
     (l1 * (mu - cosThetaDiff * cosThetaDiff))
-  // p.d2Theta1 *= friction
 
-  p.d2Theta2 =
+  let d2Theta2 =
     (mu * g * (sin(theta1) * cosThetaDiff - sin(theta2)) +
       (mu * l1 * dTheta1 * dTheta1 + l2 * dTheta2 * dTheta2 * cosThetaDiff) *
         sin(thetaDiff)) /
     (l2 * (mu - cosThetaDiff * cosThetaDiff))
-  // p.d2Theta2 *= friction
+
+  d2Theta1 += -d2Theta1 * friction
+  d2Theta2 += -d2Theta2 * friction
 
   p.dTheta1 += d2Theta1 * speed
   p.dTheta2 += d2Theta2 * speed
-  p.theta1 += dTheta1 * speed
-  p.theta2 += dTheta2 * speed
+
+  p.dTheta1 += -p.dTheta1 * friction
+  p.dTheta2 += -p.dTheta2 * friction
+
+  p.theta1 += p.dTheta1 * speed
+  p.theta2 += p.dTheta2 * speed
 
   return {
     x1: l1 * Math.sin(theta1),
@@ -138,8 +142,16 @@ for (var i = 0; i < pendulums.length; i++) {
 
   const geometry = new THREE.BufferGeometry().setFromPoints(points)
   //create a blue LineBasicMaterial
+
+  let colorStep = i * (1 / pendulums.length)
+  let rgb = evaluate_cmap(colorStep, "plasma", false)
+
+  console.log(rgb)
+
   const material = new THREE.LineBasicMaterial({
-    color: Math.floor(Math.random() * 255 * 255 * 255)
+    color: new THREE.Color(`rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`),
+    opacity: 0.6,
+    transparent: true
   })
 
   const line = new THREE.Line(geometry, material)
