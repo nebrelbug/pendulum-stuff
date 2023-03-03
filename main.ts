@@ -1,5 +1,9 @@
 import { evaluate_cmap } from "./colormaps"
-import { pendulums, update, updateGeometry } from "./math-2"
+import { pendulums, update, updateGeometry } from "./math"
+
+// const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+//   type: "module"
+// })
 
 /* THREE setup */
 
@@ -36,7 +40,7 @@ var vertices = []
 var colors = []
 
 for (var i = 0; i < pendulums.length; i++) {
-  let { x1, y1, x2, y2 } = update(pendulums[i])
+  let [x1, y1, x2, y2] = update(pendulums[i])
 
   // add pairs of points for each line segment
   vertices.push(0, 0, 0) // start point of first line
@@ -77,12 +81,18 @@ var material = new THREE.LineBasicMaterial({
 var line = new THREE.LineSegments(geometry, material)
 scene.add(line)
 
+// const buffer = new SharedArrayBuffer(16)
+
+// worker.postMessage(buffer)
+
 /* END NEW STUFF */
 
 function updateLine() {
   scene.traverse(function (line) {
     if (line.type === "LineSegments") {
       updateGeometry(line as THREE.LineSegments)
+      ;(line as THREE.LineSegments).geometry.attributes.position.needsUpdate =
+        true
     }
   })
 }
@@ -94,9 +104,13 @@ function animate() {
 
   updateLine()
 
-  stats.end()
-
   renderer.render(scene, camera)
+
+  stats.end()
 }
 
 animate()
+
+// worker.onmessage = function (e) {
+//   updateLine()
+// }

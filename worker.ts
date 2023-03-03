@@ -1,27 +1,27 @@
-// TODO: should be based on clock time rather than FPS
-
 import type { BufferAttribute } from "three"
 
-const count = 1000
+import {
+  count,
+  PI,
+  sin,
+  cos,
+  g,
+  speed,
+  friction,
+  m1,
+  m2,
+  l1,
+  l2,
+  defaultTheta1,
+  defaultTheta2
+} from "./config"
 
-/* CONSTANTS */
+let geometry
 
-const PI = Math.PI
-const sin = Math.sin
-const cos = Math.cos
-
-/* CONFIG */
-
-var g = 9.81
-var speed = 0.05
-var friction = 0.0002 // ideal may be 0.0002
-var m1 = 10
-var m2 = 10
-var l1 = 15
-var l2 = 15
-
-const defaultTheta1 = 80
-const defaultTheta2 = 90
+onmessage = function (e) {
+  console.log("Worker: Message received from main script")
+  console.log(e.data)
+}
 
 /* PENDULUM CLASS (refactor to vectorize) */
 
@@ -93,39 +93,25 @@ for (var i = 0; i < count; i++) {
 
 export { pendulums }
 
-export function updateGeometry(line: THREE.LineSegments) {
+export function updateGeometry(array: Array<any>) {
   for (var i = 0; i < pendulums.length; i++) {
     let [x1, y1, x2, y2] = update(pendulums[i])
 
-    let geoPosition = line.geometry.attributes.position as GeoPosition
-
     // There are 12 elements of each pendulum.
 
-    geoPosition.array[i * 12 + 3] = x1
-    geoPosition.array[i * 12 + 4] = y1
+    array[i * 12 + 3] = x1
+    array[i * 12 + 4] = y1
 
-    geoPosition.array[i * 12 + 6] = x1
-    geoPosition.array[i * 12 + 7] = y1
+    array[i * 12 + 6] = x1
+    array[i * 12 + 7] = y1
 
-    geoPosition.array[i * 12 + 9] = x2
-    geoPosition.array[i * 12 + 10] = y2
+    array[i * 12 + 9] = x2
+    array[i * 12 + 10] = y2
   }
-
-  line.geometry.attributes.position.needsUpdate = true
 }
 
 export function benchmarkUpdate() {
   for (var i = 0; i < pendulums.length; i++) {
     update(pendulums[i])
   }
-}
-
-// Unimportant TypeScript stuff
-
-interface NewArrayLike<T> extends ArrayLike<T> {
-  [n: number]: T
-}
-
-interface GeoPosition extends BufferAttribute {
-  array: NewArrayLike<number>
 }

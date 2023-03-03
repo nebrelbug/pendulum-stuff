@@ -1,27 +1,20 @@
-// TODO: should be based on clock time rather than FPS
-
 import type { BufferAttribute } from "three"
 
-const count = 1000
-
-/* CONSTANTS */
-
-const PI = Math.PI
-const sin = Math.sin
-const cos = Math.cos
-
-/* CONFIG */
-
-var g = 9.81
-var speed = 0.05
-var friction = 0.0002 // ideal may be 0.0002
-var m1 = 10
-var m2 = 10
-var l1 = 15
-var l2 = 15
-
-const defaultTheta1 = 80
-const defaultTheta2 = 90
+import {
+  count,
+  PI,
+  sin,
+  cos,
+  g,
+  speed,
+  friction,
+  m1,
+  m2,
+  l1,
+  l2,
+  defaultTheta1,
+  defaultTheta2
+} from "./config"
 
 /* PENDULUM CLASS (refactor to vectorize) */
 
