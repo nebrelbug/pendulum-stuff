@@ -6,7 +6,7 @@ export const cos = Math.cos
 
 /* CONFIG */
 
-export var count = 10000
+export var count = 1000000
 export var g = 9.81
 export var speed = 0.05
 export var friction = 0.0002 // ideal may be 0.0002

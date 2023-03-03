@@ -1,9 +1,10 @@
 import { evaluate_cmap } from "./colormaps"
-import { pendulums, update, updateGeometry } from "./math"
+import { pendulums, update, updateGeometry } from "./worker"
+import { count } from "./config"
 
-// const worker = new Worker(new URL("./worker.ts", import.meta.url), {
-//   type: "module"
-// })
+const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+  type: "module"
+})
 
 /* THREE setup */
 
@@ -26,7 +27,7 @@ stats.showPanel(1) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
 
 const renderer = new THREE.WebGLRenderer({
-  antialias: false, // may or may not be worth it
+  // antialias: false, // may or may not be worth it
   powerPreference: "high-performance"
 })
 
@@ -49,7 +50,10 @@ for (var i = 0; i < pendulums.length; i++) {
   vertices.push(x2, y2, 0) // end point of second line
 
   let colorStep = i * (1 / pendulums.length)
-  let rgb = evaluate_cmap(colorStep, "plasma", false)
+  let rgb = evaluate_cmap(colorStep, "terrain_r", false)
+  // faves: nipy_spectral, plasma, Blues, OrRd, terrain_r
+  // White in back is nice
+  // Colors are good
 
   const r = rgb[0] / 255
   const g = rgb[1] / 255
@@ -74,35 +78,35 @@ geometry.setAttribute("color", new THREE.BufferAttribute(typedColorsArray, 3))
 
 var material = new THREE.LineBasicMaterial({
   vertexColors: true,
-  opacity: 0.6,
+  opacity: 0.1,
   transparent: true
 })
 
 var line = new THREE.LineSegments(geometry, material)
+
+let init = line.geometry.attributes.position.array
+
+let sharedFloats = new Float32Array(new SharedArrayBuffer(12 * count * 4))
+
+sharedFloats.set(init, 0)
+
+line.geometry.attributes.position.array = sharedFloats
+
+worker.postMessage(sharedFloats)
+
 scene.add(line)
-
-// const buffer = new SharedArrayBuffer(16)
-
-// worker.postMessage(buffer)
 
 /* END NEW STUFF */
 
 function updateLine() {
-  scene.traverse(function (line) {
-    if (line.type === "LineSegments") {
-      updateGeometry(line as THREE.LineSegments)
-      ;(line as THREE.LineSegments).geometry.attributes.position.needsUpdate =
-        true
-    }
-  })
+  line.geometry.attributes.position.array = sharedFloats
+  ;(line as THREE.LineSegments).geometry.attributes.position.needsUpdate = true
 }
 
 function animate() {
   requestAnimationFrame(animate)
 
   stats.begin()
-
-  updateLine()
 
   renderer.render(scene, camera)
 
@@ -111,6 +115,6 @@ function animate() {
 
 animate()
 
-// worker.onmessage = function (e) {
-//   updateLine()
-// }
+worker.onmessage = function () {
+  updateLine()
+}

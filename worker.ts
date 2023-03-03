@@ -16,11 +16,24 @@ import {
   defaultTheta2
 } from "./config"
 
-let geometry
+let data
 
 onmessage = function (e) {
-  console.log("Worker: Message received from main script")
-  console.log(e.data)
+  if (e.data !== "done") {
+    console.log("Worker: Message received from main script")
+    console.log(e.data)
+    data = e.data
+
+    doMath()
+  }
+}
+
+function doMath() {
+  requestAnimationFrame(doMath)
+
+  updateGeometry()
+
+  postMessage("done")
 }
 
 /* PENDULUM CLASS (refactor to vectorize) */
@@ -93,20 +106,20 @@ for (var i = 0; i < count; i++) {
 
 export { pendulums }
 
-export function updateGeometry(array: Array<any>) {
+export function updateGeometry() {
   for (var i = 0; i < pendulums.length; i++) {
     let [x1, y1, x2, y2] = update(pendulums[i])
 
     // There are 12 elements of each pendulum.
 
-    array[i * 12 + 3] = x1
-    array[i * 12 + 4] = y1
+    data[i * 12 + 3] = x1
+    data[i * 12 + 4] = y1
 
-    array[i * 12 + 6] = x1
-    array[i * 12 + 7] = y1
+    data[i * 12 + 6] = x1
+    data[i * 12 + 7] = y1
 
-    array[i * 12 + 9] = x2
-    array[i * 12 + 10] = y2
+    data[i * 12 + 9] = x2
+    data[i * 12 + 10] = y2
   }
 }
 

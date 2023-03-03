@@ -185,14 +185,20 @@ const winter_r = partial('winter_r');
 Define auxiliary functions for evaluating colormaps
  */
 
-export function evaluate_cmap(x: number, name: string, reverse: boolean) {
+export function evaluate_cmap(x: number, name: string, reverse: boolean): [number, number, number] {
   /**
    * Evaluate colormap `name` at some value `x`.
    * @param {number} x - The value (between 0 and 1) at which to evaluate the colormap.
    * @param {string} name - The name of the colormap (see matplotlib documentation).
    * @reverse {boolean} reverse - Whether or not to reverse the colormap.
    * @return {list} - A 3-tuple (R, G, B) containing the color assigned to `x`.
-   */
+  */
+  
+  // Hacky quick fix
+
+  if (name.endsWith("_r")) {
+    return evaluate_cmap(x, name.substring(0, name.length - 2), true)
+  } 
 
   // Ensure that the value of `x` is valid (i.e., 0 <= x <= 1)
   if (x < 0 || x > 1) {
@@ -220,7 +226,7 @@ export function evaluate_cmap(x: number, name: string, reverse: boolean) {
   }
 }
 
-function interpolated(x: number, colors: Array<any>) {
+function interpolated(x: number, colors: Array<any>): [number, number, number] {
   let lo = Math.floor(x * (colors.length - 1));
   let hi = Math.ceil(x * (colors.length - 1));
   let r = Math.round((colors[lo][0] + colors[hi][0]) / 2 * 255);
@@ -229,13 +235,15 @@ function interpolated(x: number, colors: Array<any>) {
   return [r, g, b];
 }
 
-function qualitative(x: number, colors: Array<any>) {
-  let idx = 0;
-  while (x > (idx + 1) / (colors.length - 0) ) { idx++; }
-  let r = Math.round(colors[idx][0] * 255);
-  let g = Math.round(colors[idx][1] * 255);
-  let b = Math.round(colors[idx][2] * 255);
-  return [r, g, b];
+function qualitative(x: number, colors: Array<any>): [number, number, number] {
+  let idx = 0
+  while (x > (idx + 1) / (colors.length - 0)) {
+    idx++
+  }
+  let r = Math.round(colors[idx][0] * 255)
+  let g = Math.round(colors[idx][1] * 255)
+  let b = Math.round(colors[idx][2] * 255)
+  return [r, g, b]
 }
 
 function partial(name: string) {
