@@ -1,0 +1,33 @@
+{
+  "name": "Double pendulum physics",
+  "date": "2023-03-03T02:11:11.480Z",
+  "version": "1.0.0",
+  "results": [
+    {
+      "name": "math.ts",
+      "ops": 17540,
+      "margin": 1.03,
+      "percentSlower": 99.99
+    },
+    {
+      "name": "math-2.ts",
+      "ops": 18577,
+      "margin": 1.13,
+      "percentSlower": 99.99
+    },
+    {
+      "name": "Reduce five elements",
+      "ops": 241097192,
+      "margin": 1.92,
+      "percentSlower": 0
+    }
+  ],
+  "fastest": {
+    "name": "Reduce five elements",
+    "index": 2
+  },
+  "slowest": {
+    "name": "math.ts",
+    "index": 0
+  }
+}
