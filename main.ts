@@ -1,4 +1,6 @@
-const count = 50000
+const count = 100
+
+// TODO: should be based on clock time rather than FPS
 
 import { evaluate_cmap } from "./colormaps"
 
@@ -19,10 +21,14 @@ camera.position.set(0, 0, 100)
 camera.lookAt(0, 0, 0)
 
 var stats = new Stats()
-stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+stats.showPanel(1) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
 
-const renderer = new THREE.WebGLRenderer()
+const renderer = new THREE.WebGLRenderer({
+  antialias: false, // may or may not be worth it
+  powerPreference: "high-performance"
+})
+
 renderer.setSize(window.innerWidth, window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
@@ -48,28 +54,12 @@ const defaultTheta2 = 90
 /* PENDULUM CLASS (refactor to vectorize) */
 
 class Pendulum {
-  m1: number
-  m2: number
-  l1: number
-  l2: number
   theta1: number
   theta2: number
   dTheta1: number
   dTheta2: number
 
-  constructor(
-    theta1 = 80,
-    theta2 = 90,
-    mass1 = m1,
-    mass2 = m2,
-    length1 = l1,
-    length2 = l2
-  ) {
-    this.m1 = mass1
-    this.m2 = mass2
-    this.l1 = length1
-    this.l2 = length2
-
+  constructor(theta1 = 80, theta2 = 90) {
     this.theta1 = (theta1 * PI) / 180
     this.theta2 = (theta2 * PI) / 180
 
@@ -80,9 +70,9 @@ class Pendulum {
 
 // Borrowed from https://github.com/micaeloliveira/physics-sandbox/blob/feature/new-styling/assets/javascripts/pendulum.js
 function update(p: Pendulum) {
-  let mu = 1 + p.m1 / p.m2
+  let mu = 1 + m1 / m2
 
-  let { theta1, theta2, dTheta1, dTheta2, l1, l2 } = p
+  let { theta1, theta2, dTheta1, dTheta2 } = p
 
   let thetaDiff = theta1 - theta2
 
@@ -131,46 +121,86 @@ for (var i = 0; i < count; i++) {
   pendulums.push(newP)
 }
 
-for (var i = 0; i < pendulums.length; i++) {
-  const points: THREE.Vector2[] = []
+/* NEW STUFF */
 
+// create an empty geometry
+var geometry = new THREE.BufferGeometry()
+
+// create an array of vertices
+var vertices = []
+// create an array of colors
+var colors = []
+
+for (var i = 0; i < pendulums.length; i++) {
   let { x1, y1, x2, y2 } = update(pendulums[i])
 
-  points.push(new THREE.Vector2(0, 0))
-  points.push(new THREE.Vector2(x1, y1))
-  points.push(new THREE.Vector2(x2, y2))
-
-  const geometry = new THREE.BufferGeometry().setFromPoints(points)
-  //create a blue LineBasicMaterial
+  // add pairs of points for each line segment
+  vertices.push(0, 0, 0) // start point of first line
+  vertices.push(x1, y1, 0) // end point of first line
+  vertices.push(x1, y1, 0) // start point of second line
+  vertices.push(x2, y2, 0) // end point of second line
+  // and so on...
 
   let colorStep = i * (1 / pendulums.length)
   let rgb = evaluate_cmap(colorStep, "plasma", false)
 
-  console.log(rgb)
+  const r = rgb[0] / 255
+  const g = rgb[1] / 255
+  const b = rgb[2] / 255
 
-  const material = new THREE.LineBasicMaterial({
-    color: new THREE.Color(`rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`),
-    opacity: 0.6,
-    transparent: true
-  })
-
-  const line = new THREE.Line(geometry, material)
-
-  line.name = i.toString()
-
-  scene.add(line)
+  // add pairs of colors for each line segment
+  colors.push(r, g, b) // start color of first line
+  colors.push(r, g, b) // end color of first line
+  colors.push(r, g, b) // start color of second line
+  colors.push(r, g, b) // end color of second line
+  // and so on...
 }
+
+// convert the array to a typed array
+var typedArray = new Float32Array(vertices)
+
+// set the geometry position attribute
+geometry.setAttribute("position", new THREE.BufferAttribute(typedArray, 3))
+
+// convert the array to a typed array
+var typedArray = new Float32Array(colors)
+
+// set the geometry color attribute
+geometry.setAttribute("color", new THREE.BufferAttribute(typedArray, 3))
+
+// create a material for the line with vertex colors enabled
+var material = new THREE.LineBasicMaterial({
+  vertexColors: true,
+  opacity: 0.6,
+  transparent: true
+})
+
+// create a LineSegments object from the geometry and material
+var line = new THREE.LineSegments(geometry, material)
+
+// add the line to the scene
+scene.add(line)
+
+/* END NEW STUFF */
 
 function updateGeometry() {
   scene.traverse(function (line) {
-    if (line.type === "Line") {
-      // console.log(pendulums[line.name as unknown as number] as Pendulum)
+    if (line.type === "LineSegments") {
+      for (var i = 0; i < pendulums.length; i++) {
+        let { x1, y1, x2, y2 } = update(pendulums[i])
 
-      let { x1, y1, x2, y2 } = update(pendulums[line.name as unknown as number])
-      line.geometry.attributes.position.array[3] = x1
-      line.geometry.attributes.position.array[4] = y1
-      line.geometry.attributes.position.array[6] = x2
-      line.geometry.attributes.position.array[7] = y2
+        // There are 12 elements of each pendulum.
+
+        line.geometry.attributes.position.array[i * 12 + 3] = x1
+        line.geometry.attributes.position.array[i * 12 + 4] = y1
+
+        line.geometry.attributes.position.array[i * 12 + 6] = x1
+        line.geometry.attributes.position.array[i * 12 + 7] = y1
+
+        line.geometry.attributes.position.array[i * 12 + 9] = x2
+        line.geometry.attributes.position.array[i * 12 + 10] = y2
+      }
+
       line.geometry.attributes.position.needsUpdate = true
     }
   })
