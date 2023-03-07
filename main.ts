@@ -70,7 +70,7 @@ geometry.setAttribute("color", new THREE.BufferAttribute(typedColorsArray, 3))
 
 var material = new THREE.LineBasicMaterial({
   vertexColors: true,
-  opacity: 0.6,
+  opacity: 0.2,
   transparent: true
 })
 
