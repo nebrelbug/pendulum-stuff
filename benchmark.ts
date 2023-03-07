@@ -1,5 +1,5 @@
 import { benchmarkUpdate as b1 } from "./math.js"
-import { benchmarkUpdate as b2 } from "./math-2.js"
+// import { benchmarkUpdate as b2 } from "./math-2.js"
 
 import b from "benny"
 
@@ -10,9 +10,9 @@ b.suite(
     b1()
   }),
 
-  b.add("math-2.ts", () => {
-    b2()
-  }),
+  // b.add("math-2.ts", () => {
+  //   b2()
+  // }),
 
   b.add("Reduce five elements", () => {
     ;[1, 2, 3, 4, 5].reduce((a, b) => a + b)

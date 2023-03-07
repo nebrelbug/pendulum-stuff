@@ -2,7 +2,7 @@
 
 import type { BufferAttribute } from "three"
 
-const count = 100000
+const count = 10000
 
 /* CONSTANTS */
 
