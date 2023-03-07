@@ -1,5 +1,5 @@
 import { evaluate_cmap } from "./colormaps"
-import { pendulums, update, updateGeometry } from "./math-2"
+import { pendulums, update, updateGeometry } from "./math"
 
 /* THREE setup */
 
@@ -36,7 +36,7 @@ var vertices = []
 var colors = []
 
 for (var i = 0; i < pendulums.length; i++) {
-  let { x1, y1, x2, y2 } = update(pendulums[i])
+  let [x1, y1, x2, y2] = update(pendulums[i])
 
   // add pairs of points for each line segment
   vertices.push(0, 0, 0) // start point of first line
