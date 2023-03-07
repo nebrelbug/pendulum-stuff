@@ -1,7 +1,3 @@
-// TODO: should be based on clock time rather than FPS
-
-import type { BufferAttribute } from "three"
-
 const count = 100000
 
 /* CONSTANTS */
@@ -14,7 +10,7 @@ const cos = Math.cos
 
 var g = 9.81
 var speed = 0.05
-var friction = 0.0002 // ideal may be 0.0002
+var friction = 0.0004 // ideal may be 0.0002
 var m1 = 10
 var m2 = 10
 var l1 = 15
@@ -23,14 +19,12 @@ var l2 = 15
 const defaultTheta1 = 80
 const defaultTheta2 = 90
 
-/* PENDULUM CLASS (refactor to vectorize) */
-
-type Pendulum = [number, number, number, number]
+// type Pendulum = [number, number, number, number]
 // theta1, theta2, dTheta1, dTheta2
 
 // Borrowed from https://github.com/micaeloliveira/physics-sandbox/blob/feature/new-styling/assets/javascripts/pendulum.js, then adjusted for improved performance and friction
 
-export function update(p: Pendulum) {
+export function update(p) {
   let mu = 1 + m1 / m2
 
   let [theta1, theta2, dTheta1, dTheta2] = p
@@ -70,6 +64,8 @@ export function update(p: Pendulum) {
   p[0] += p[2] * speed
   p[1] += p[3] * speed
 
+  // friction *= 1.000000000001
+
   return [
     l1 * sinTheta1,
     -l1 * cosTheta1,
@@ -78,10 +74,10 @@ export function update(p: Pendulum) {
   ]
 }
 
-let pendulums: Pendulum[] = []
+let pendulums = []
 
 for (var i = 0; i < count; i++) {
-  let newP: Pendulum = [
+  let newP = [
     ((defaultTheta1 + i * (1 / count)) * PI) / 180,
     ((defaultTheta2 + i * (1 / count)) * PI) / 180,
     0,
@@ -93,11 +89,11 @@ for (var i = 0; i < count; i++) {
 
 export { pendulums }
 
-export function updateGeometry(line: THREE.LineSegments) {
+export function updateGeometry(line) {
   for (var i = 0; i < pendulums.length; i++) {
     let [x1, y1, x2, y2] = update(pendulums[i])
 
-    let geoPosition = line.geometry.attributes.position as GeoPosition
+    let geoPosition = line.geometry.attributes.position
 
     // There are 12 elements of each pendulum.
 
@@ -118,14 +114,4 @@ export function benchmarkUpdate() {
   for (var i = 0; i < pendulums.length; i++) {
     update(pendulums[i])
   }
-}
-
-// Unimportant TypeScript stuff
-
-interface NewArrayLike<T> extends ArrayLike<T> {
-  [n: number]: T
-}
-
-interface GeoPosition extends BufferAttribute {
-  array: NewArrayLike<number>
 }
