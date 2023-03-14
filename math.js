@@ -1,4 +1,4 @@
-const count = 100000
+export const count = 100000
 
 /* CONSTANTS */
 

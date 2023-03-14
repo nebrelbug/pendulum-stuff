@@ -1,5 +1,5 @@
 import { evaluate_cmap } from "./colormaps"
-import { pendulums, update, updateGeometry } from "./math"
+import { pendulums, count, update, updateGeometry } from "./math"
 
 /* THREE setup */
 
@@ -22,7 +22,7 @@ stats.showPanel(1) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
 
 const renderer = new THREE.WebGLRenderer({
-  // antialias: false, // may or may not be worth it
+  antialias: true, // to consider
   powerPreference: "high-performance"
 })
 
@@ -69,9 +69,26 @@ geometry.setAttribute(
 
 geometry.setAttribute("color", new THREE.BufferAttribute(typedColorsArray, 3))
 
+let opacity = 1
+
+if (count > 50) {
+  opacity = 0.9
+}
+if (count > 100) {
+  opacity = 0.75
+}
+if (count > 1000) {
+  opacity = 0.5
+}
+if (count > 10000) {
+  opacity = 0.2
+}
+
+console.log(opacity)
+
 var material = new THREE.LineBasicMaterial({
   vertexColors: true,
-  opacity: 0.2,
+  opacity: opacity,
   transparent: true
   // linewidth: 10
 })
