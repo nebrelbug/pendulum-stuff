@@ -19,7 +19,7 @@ camera.lookAt(0, -15, 0)
 
 var stats = new Stats()
 stats.showPanel(1) // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild(stats.dom)
+// document.body.appendChild(stats.dom)
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true, // to consider
