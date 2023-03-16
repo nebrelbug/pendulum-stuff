@@ -2,17 +2,66 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
-    <style>
-      body {
-        margin: 0;
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+
+    <script>
+      if (typeof module === "object") {
+        window.module = module
+        module = undefined
       }
-    </style>
+    </script>
+    <script src="jquery-3.6.0.min.js" type="text/javascript"></script>
+    <script src="fader.js" type="text/javascript"></script>
   </head>
   <body>
-    <script type="module" src="/main.js"></script>
+    <div class="storytext fader">
+      This is a visualization of array sorting using a variety of popular
+      algorithms!
+    </div>
+
+    <div class="storytext fader">
+      An array is a list of numbers. We start here with a shuffled list of
+      numbers.
+    </div>
+
+    <div class="storytext fader">
+      Each algorithm goes about sorting the array in a different way.
+    </div>
+
+    <div class="storytext fader">
+      The smaller the slice of the figure, the lower the number.
+    </div>
+
+    <div class="storytext fader">
+      As you can see, each method eventually sorts the numbers in ascending
+      order.
+    </div>
+
+    <div class="storytext fader">
+      Try adjusting the parameters of the visualization using the QR code to the
+      left!
+    </div>
+
     <div id="container"></div>
+
+    <script type="module" src="/main.js"></script>
+
+    <script>
+      function startFading() {
+        $(document).ready(function () {
+          fader_set_defaults({
+            in: 300,
+            stay: 5000,
+            out: 300,
+            delaynext: 6000
+          })
+          fader_start()
+        })
+      }
+      window.addEventListener("load", (_) => startFading())
+    </script>
   </body>
 </html>
